@@ -1,0 +1,173 @@
+<html lang="en-US">
+<head>
+</head>
+<body>
+
+
+
+<script type="text/javascript">
+
+var protocol = "https";
+//var hostName = "econdo.ff.mrisoftware.net";
+var hostName ="localhost:44340";
+var path = "api/v1/registration";
+var apiID = "32fbc0d7b99d4c9a9b15d2d0d1ba93c1"; 
+var apiKey = "uG6rK%2B4b8PMyDvuwF6imEK6HKUwOMS9K6iKGbCuvN3M%3D";
+
+
+
+window.onload = function() {
+	this.showHidePerson("visitor", "broker"); //exclude from API Registration doc
+	this.renderAdSourceList("broker-adsource");
+	this.renderAdSourceList("visitor-adsource");
+}  
+
+function renderAdSourceList(dropDownId) {
+	var adSourceList = document.getElementById(dropDownId);
+	let url = protocol + "://" + hostName + "/" + path + "/adsource?ID="+apiID+"&key="+apiKey;
+	let _this = this;
+	fetch(url)
+	  .then(response => {
+		if (!response.ok) {
+		  throw new Error(`Request failed with status ${reponse.status}`)
+		}
+		return response.json()
+	  })
+	  .then(data => {
+		let result = JSON.parse(data);
+		if (!result || result.adSource.length === 0) return;
+		let adSourceItems = result.adSource.sort((a, b) => (a.AdSource > b.AdSource) ? 1 : ((b.AdSource > a.AdSource) ? -1 : 0) );
+		adSourceItems.forEach((item, indx, arr) => {
+			adSourceList.options[adSourceList.options.length] = new Option(`${item.AdSource} - ${item.AdSourceMedia}` , item.AdSourceMedia);
+		});
+	  })
+	.catch(error => console.log(error));
+}
+
+function validateControls(formType) {
+	if (formType === 'visitor') {
+		let firstName = document.getElementById("firstname");
+		let lastName = document.getElementById("lastname");
+		let email = document.getElementById("email");
+		let phone = document.getElementById("homephone");
+		
+		if (firstName.value.trim() === "" && firstName.required) return false;  
+		if (lastName.value.trim() === "" && lastName.required) return false;
+		if (email.value.trim() === "" && email.required) return false;
+		if (phone.value.trim() === "" && phone.required) return false;
+	} else {
+		let agentFirstName = document.getElementById("agentfirstname");
+		let agentLastName = document.getElementById("agentlastname");
+		let agentEmail = document.getElementById("agentemail");
+		let agentPhone = document.getElementById("AgentCellPhone");
+		
+		if (agentFirstName.value.trim() === "" && agentFirstName.required) return false;  
+		if (agentLastName.value.trim() === "" && agentLastName.required) return false;
+		if (agentEmail.value.trim() === "" && agentEmail.required) return false;
+		if (agentPhone.value.trim() === "" && agentPhone.required) return false;	
+		
+	}
+	
+	if (this.adSourceList && this.adSourceList.selectedIndex < 1 && adSourceList.required) return false;
+	
+	
+	return true;		
+}
+ 
+
+function setFormAction( formID ) {
+	//exclude from api reg doc
+		let broker = document.getElementById('broker');
+		let formType  = 'visitor'
+		if (broker.style.display == "block") formType = 'broker';
+	// exclude
+	
+	//if (!this.validateControls()) return;
+	if(formType == "visitor") {
+
+		var url = protocol + "://" + hostName + "/" + path + "/visitor?ID="+apiID+"&key="+apiKey;
+		document.getElementById(formID).action = url;
+
+	}
+
+	else {
+
+		document.getElementById(formID).action = protocol + "://" + hostName + "/" + path + "/broker?ID="+apiID+"&key="+apiKey;
+
+	}
+
+	document.getElementById(formID).submit();
+
+	return;
+
+}
+
+function showHideAdSourceNotes(adSourceDropDown, adSourceNotesId) {	
+	var divAdSourceNotes = document.getElementById(adSourceNotesId);
+	divAdSourceNotes.style.display = adSourceDropDown.value.toLowerCase().includes("other")  ? "block" : "none";
+}
+
+function showHidePerson(showId, hideId) {
+	var x = document.getElementById(showId);
+	var y = document.getElementById(hideId);
+	x.style.display = "block";
+	y.style.display = "none";
+}
+
+</script>
+<h1>FF - South Beach Lofts</h1>
+<input type="radio" name="person" onclick="showHidePerson('visitor', 'broker')" checked>Visitor</input>
+<input type="radio"name="person" onclick="showHidePerson('broker', 'visitor')">Broker/Agent</input>
+
+<form action="https://econdo.ff.mrisoftware.net/api/v1/registration" method="POST" name="contact" id="contact">
+
+<input type="hidden" name="redirect" value="https://condohotelorlando.com/thanks/">
+<div id="visitor">
+<h1>Visitor</h1>
+First Name: <br><input type="text" id="firstname" name="firstname" size="60%" maxlength="60%" placeholder="First Name"  ><br><br>
+
+Last Name: <br><input type="text" id="lastname" name="lastname" size="60%" maxlength="60%" placeholder="Last Name"  ><br><br>
+
+Email: <br><input type="text" id="email" name="email" size="60%" maxlength="60%" placeholder="Email Address"  ><br><br>
+
+Phone: <br><input type="text" id="homephone" name="homephone" size="60%" maxlength="60%" placeholder="Phone Number"  ><br><br>
+How did you hear about us? <br>
+<select id="visitor-adsource" name="adsource" onchange="showHideAdSourceNotes(this, 'visitor-adsource-notes')" > 
+	<option value="" disabled selected hidden>-- Select Ad Source --</option>
+</select>
+<div id="visitor-adsource-notes" style="display: none">
+	<br>
+	How did your Hear About Us: <br><input type="textarea" id="visitoradsourcenotes" name="adsourcenotes" size="60%" maxlength="60%" placeholder="How Did You Hear About Us"><br><br>
+</div>
+<input id="visitor-utm" name="utm" type="hidden" value="https://measureschool.com/capture-utm-parameters-in-form-fields/">
+</div>
+
+<div id="broker">
+<h1>Broker and Agent</h1>
+Broker Company: <br><input type="text" id="brokercompany" name="brokercompany" size="60%" maxlength="60%" placeholder="Broker Company" ><br><br>
+Broker Notes: <br><input type="textarea" id="notes" name="notes" size="60%" maxlength="60%" placeholder="Broker Notes"><br><br>
+First Name: <br><input type="text" id="agentfirstname" name="agentfirstname" size="60%" maxlength="60%" placeholder="First Name" ><br><br>
+
+Last Name: <br><input type="text" id="agentlastname" name="agentlastname" size="60%" maxlength="60%" placeholder="Last Name" ><br><br>
+
+Email: <br><input type="text" id="agentemail" name="agentemail" size="60%" maxlength="60%" placeholder="Email Address" ><br><br>
+
+Phone: <br><input type="text" id="agentworkphone" name="agentworkphone" size="60%" maxlength="60%" placeholder="Phone Number" ><br><br>
+
+Agent Notes: <br><input type="textarea" id="agentnotes" name="agentnotes" size="60%" maxlength="60%" placeholder="Agent Notes"><br><br>
+
+How did you hear about us? <br>
+<select id="broker-adsource" name="adsource" onchange="showHideAdSourceNotes(this, 'broker-adsource-notes')"  > 
+	<option value="" disabled selected hidden>-- Select Ad Source --</option>
+</select>	
+<br>
+<div id="broker-adsource-notes" style="display: none">
+	<br>
+	How did your Hear About Us: <br><input type="textarea" id="brokeradsourcenotes" name="brokeradsourcenotes" size="60%" maxlength="60%" placeholder="How Did You Hear About Us"><br><br>
+</div>
+<input id="brokerutm" name="brokerutm" type="hidden" value="https://stickyclick.co.uk/insights/gclid-tracking-what-it-is-and-how-to-implement-it">
+</div>
+<button  data-action="submit" onclick="setFormAction(&#39;contact&#39;);">Submit</button>
+</form>
+
+</body></html>
